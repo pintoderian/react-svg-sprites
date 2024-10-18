@@ -1,0 +1,40 @@
+{
+  "name": "react-svg-sprites",
+  "version": "1.0.0",
+  "description": "Extension to generate SVG sprites and provide an Icon component",
+  "main": "dist/index.js",
+  "bin": {
+    "react-svg-sprites": "./bin/build-svg-sprites.mjs"
+  },
+  "scripts": {
+    "build": "babel src --out-dir dist",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pintoderian/react-svg-sprites.git"
+  },
+  "keywords": [
+    "nextjs",
+    "svg",
+    "sprites",
+    "svg",
+    "sprites"
+  ],
+  "author": "Derian Pinto",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pintoderian/react-svg-sprites/issues"
+  },
+  "homepage": "https://github.com/pintoderian/react-svg-sprites#readme",
+  "dependencies": {
+    "@babel/cli": "^7.25.7",
+    "@babel/preset-env": "^7.25.8",
+    "@babel/preset-react": "^7.25.7",
+    "fs-extra": "^11.2.0",
+    "node-html-parser": "^6.1.13",
+    "prop-types": "^15.8.1",
+    "react": "^18.3.1",
+    "svg-sprite": "^2.0.4"
+  }
+}

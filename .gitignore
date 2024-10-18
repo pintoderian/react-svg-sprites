@@ -1,0 +1,26 @@
+# Node modules
+node_modules/
+
+# Build output
+lib/
+dist/
+*.log
+
+# Environment variables
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# npm debug log
+npm-debug.log*
+
+# Yarn files
+yarn-error.log
+yarn-debug.log*
+
+# Others
+coverage/
+.idea/
+.vscode/

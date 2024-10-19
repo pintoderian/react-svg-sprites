@@ -19,7 +19,8 @@
     "svg",
     "sprites",
     "svg",
-    "sprites"
+    "sprites",
+    "react"
   ],
   "author": "Derian Pinto",
   "license": "MIT",

@@ -3,11 +3,16 @@
   "version": "1.0.1",
   "description": "Extension to generate SVG sprites and provide an Icon component",
   "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "react-svg-sprites": "./bin/build-svg-sprites.mjs"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "babel src --out-dir dist",
+    "build": "rollup -c",
     "prepare": "npm run build"
   },
   "repository": {
@@ -29,13 +34,21 @@
   },
   "homepage": "https://github.com/pintoderian/react-svg-sprites#readme",
   "dependencies": {
-    "@babel/cli": "^7.25.7",
-    "@babel/preset-env": "^7.25.8",
-    "@babel/preset-react": "^7.25.7",
     "fs-extra": "^11.2.0",
     "node-html-parser": "^6.1.13",
-    "prop-types": "^15.8.1",
-    "react": "^18.3.1",
     "svg-sprite": "^2.0.4"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "typescript": "^4.5.0",
+    "rollup": "^2.79.1",
+    "@rollup/plugin-typescript": "^8.3.3",
+    "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "tslib": "^2.4.0"
   }
 }

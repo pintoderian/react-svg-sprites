@@ -9,7 +9,9 @@
     "react-svg-sprites": "./bin/build-svg-sprites.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "generateSprites.mjs",
+    "screenshots"
   ],
   "scripts": {
     "build": "rollup -c",
@@ -23,9 +25,10 @@
     "nextjs",
     "svg",
     "sprites",
-    "svg",
-    "sprites",
-    "react"
+    "remix",
+    "astro",
+    "react",
+    "sprite"
   ],
   "author": "Derian Pinto",
   "license": "MIT",

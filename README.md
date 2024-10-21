@@ -1,3 +1,14 @@
+<p>
+  <a aria-label="NPM version" href="https://www.npmjs.com/package/react-svg-sprites">
+    <img alt="" src="https://img.shields.io/npm/v/react-svg-sprites?style=for-the-badge&color=0869B8">
+  </a>
+  <a aria-label="Twitter Logo" href="https://x.com/dpintoec">
+    <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white&labelColor=007BCE">
+  </a>
+</p>
+
+---
+
 # react-svg-sprites
 
 react-svg-sprites is an extension to generate SVG sprites and provide an icon component in React applications.
@@ -12,7 +23,7 @@ npm install react-svg-sprites
 
 ## Configuration
 
-Make sure you have a configuration file sprites.config.json in your root directory with the following format:
+Make sure you have a configuration file **sprites.config.json** in your root directory with the following format:
 
 ```json
 {
@@ -31,13 +42,17 @@ npx react-svg-sprites
 
 This will look in the folders specified in your configuration file and generate the sprites in the specified output directory.
 
+### Result files
+
+<img alt="" src="./screenshots/compiled-sprites.jpg">
+
 ## Usage
 
 To use the `SpriteIcon` component, you must first configure it with the paths to your SVG files. Here is an example of how to use it:
 
 ```jsx
-import React from "react";
-import { SpriteIcon } from "react-svg-sprites";
+import React from 'react';
+import { SpriteIcon } from 'react-svg-sprites';
 
 const App = () => {
   return (

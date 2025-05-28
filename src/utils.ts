@@ -11,19 +11,16 @@ import type { SpriteConfig } from './types';
  * @returns SpriteConfig object with validated settings
  */
 export const loadSpriteConfig = async (): Promise<SpriteConfig> => {
-  const configPath = path.resolve(process.cwd(), 'sprites.config.ts');
+  const configPath = path.resolve(process.cwd(), 'sprites.config.js');
 
   if (!fs.existsSync(configPath)) {
-    throw new Error('❌ sprites.config.ts not found in the project root.');
+    throw new Error('❌ sprites.config.js not found in the project root.');
   }
 
-  // Convert file path to ESM-compatible file URL
-  const configUrl = pathToFileURL(configPath).href;
-
-  const config = (await import(configUrl)).default as SpriteConfig;
+  const config = require(configPath) as SpriteConfig;
 
   if (!config.outputDir) {
-    throw new Error('❌ Missing required "outputDir" in sprites.config.ts.');
+    throw new Error('❌ Missing required "outputDir" in sprites.config.js.');
   }
 
   return config;

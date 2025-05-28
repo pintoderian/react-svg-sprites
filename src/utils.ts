@@ -1,18 +1,26 @@
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
+import { parse } from 'node-html-parser';
 import type { SpriteConfig } from './types';
 
 /**
- * Loads the user's sprites.config.ts file dynamically.
- * @returns Parsed SpriteConfig object
+ * Dynamically loads and parses sprites.config.ts from the root directory.
+ * Supports Windows, macOS, Linux.
+ *
+ * @returns SpriteConfig object with validated settings
  */
 export const loadSpriteConfig = async (): Promise<SpriteConfig> => {
   const configPath = path.resolve(process.cwd(), 'sprites.config.ts');
+
   if (!fs.existsSync(configPath)) {
     throw new Error('❌ sprites.config.ts not found in the project root.');
   }
 
-  const config = (await import(configPath)).default as SpriteConfig;
+  // Convert file path to ESM-compatible file URL
+  const configUrl = pathToFileURL(configPath).href;
+
+  const config = (await import(configUrl)).default as SpriteConfig;
 
   if (!config.outputDir) {
     throw new Error('❌ Missing required "outputDir" in sprites.config.ts.');
@@ -22,30 +30,34 @@ export const loadSpriteConfig = async (): Promise<SpriteConfig> => {
 };
 
 /**
- * Recursively gathers all .svg files from a given directory.
- * @param dir Directory to scan for SVG files
- * @param files Accumulator array (used internally)
- * @returns Array of absolute file paths
+ * Recursively collects all `.svg` files from a directory.
+ *
+ * @param dir Target directory
+ * @param files (internal) accumulator
+ * @returns Array of absolute .svg file paths
  */
 export const getSvgFiles = (dir: string, files: string[] = []): string[] => {
   const entries = fs.readdirSync(dir);
+
   for (const entry of entries) {
     const fullPath = path.join(dir, entry);
     if (fs.statSync(fullPath).isDirectory()) {
       getSvgFiles(fullPath, files);
-    } else if (path.extname(fullPath) === '.svg') {
+    } else if (path.extname(fullPath).toLowerCase() === '.svg') {
       files.push(fullPath);
     }
   }
+
   return files;
 };
 
 /**
- * Removes unnecessary attributes from an SVG tag to clean up the sprite.
- * @param svg The root <svg> element parsed by node-html-parser
+ * Removes unnecessary attributes from a <svg> tag to clean up output.
+ *
+ * @param svg Root <svg> tag from node-html-parser
  */
 export const cleanSvgAttributes = (svg: any): void => {
-  const attributesToRemove = [
+  const attrsToRemove = [
     'xmlns',
     'xmlns:xlink',
     'xml:space',
@@ -55,7 +67,8 @@ export const cleanSvgAttributes = (svg: any): void => {
     'style',
     'id',
   ];
-  for (const attr of attributesToRemove) {
+
+  for (const attr of attrsToRemove) {
     svg.removeAttribute(attr);
   }
 };

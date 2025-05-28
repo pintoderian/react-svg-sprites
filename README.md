@@ -1,96 +1,128 @@
-<p>
-  <a aria-label="NPM version" href="https://www.npmjs.com/package/react-svg-sprites">
-    <img alt="" src="https://img.shields.io/npm/v/react-svg-sprites?style=for-the-badge&color=0869B8">
+<p align="center">
+  <a href="https://www.npmjs.com/package/react-svg-sprites">
+    <img src="https://img.shields.io/npm/v/react-svg-sprites?style=for-the-badge&color=0869B8" alt="NPM version">
   </a>
-  <a aria-label="Twitter Logo" href="https://x.com/dpintoec">
-    <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white&labelColor=007BCE">
+  <a href="https://x.com/dpintoec">
+    <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white&labelColor=007BCE" alt="Twitter">
   </a>
 </p>
 
 ---
 
-# react-svg-sprites
+# 🧩 react-svg-sprites
 
-react-svg-sprites is an extension to generate SVG sprites and provide an icon component in React applications.
+A flexible SVG sprite generator and React icon component.  
+Supports raw folders, grouped components, flat or structured output, and even SVGO optimization.
 
-## Installation
-
-To install the package, run the following command:
+## 📦 Installation
 
 ```bash
 npm install react-svg-sprites
 ```
 
-## Configuration
+## ⚙️ Configuration (`sprites.config.ts`)
 
-Make sure you have a configuration file **sprites.config.json** in your root directory with the following format:
+Create a `sprites.config.ts` file in the root of your project:
 
-```json
-{
-  "iconsFolders": ["public/icons/flat", "public/icons/cms"],
-  "outputDir": "public/sprites"
-}
+```ts
+import { ArrowLeft, Folder, Timer } from 'lucide-react';
+
+export default {
+  iconDirs: ['./public/icons/flat', './public/icons/cms'],
+  iconComponents: {
+    ui: [
+      { name: 'ArrowLeft', component: ArrowLeft },
+      { name: 'Timer', component: Timer },
+    ],
+    system: [{ name: 'Folder', component: Folder }],
+  },
+  outputDir: './public/sprites',
+  flatOutput: false,
+  spriteFileName: 'icons',
+  optimize: true,
+  includeTitle: true,
+};
 ```
 
-## Sprite generation
+### Available Options
 
-To generate SVG sprites, you can run the following command in your terminal:
+| Option           | Type                                 | Description                                                          |
+| ---------------- | ------------------------------------ | -------------------------------------------------------------------- |
+| `iconDirs`       | `string[]`                           | Folders with `.svg` files.                                           |
+| `iconComponents` | `Icon[]` or `Record<string, Icon[]>` | Grouped or flat list of icon components.                             |
+| `outputDir`      | `string`                             | Directory where sprites will be generated.                           |
+| `flatOutput`     | `boolean`                            | If true, outputs all sprites in root without folders.                |
+| `spriteFileName` | `string`                             | Custom name for final file (only in flat mode). Default: `"sprite"`. |
+| `optimize`       | `boolean`                            | Uses [SVGO](https://github.com/svg/svgo) to optimize SVGs.           |
+| `includeTitle`   | `boolean`                            | Adds `<title>` tag to each symbol for accessibility.                 |
+
+---
+
+## 🚀 Sprite generation
 
 ```bash
 npx react-svg-sprites
 ```
 
-This will look in the folders specified in your configuration file and generate the sprites in the specified output directory.
+This command will:
 
-### Result files
+- Parse all configured folders and components.
+- Create one or more optimized sprite sheets in `outputDir`.
 
-<img alt="" src="./screenshots/compiled-sprites.jpg">
+### Output example
 
-## Usage
-
-To use the `SpriteIcon` component, you must first configure it with the paths to your SVG files. Here is an example of how to use it:
-
-```jsx
-import React from 'react';
-import { SpriteIcon } from 'react-svg-sprites';
-
-const App = () => {
-  return (
-    <div>
-      <h1>SpriteIcon Example</h1>
-      <SpriteIcon
-        className="text-primary"
-        src="/flat/timer.svg"
-        width="25px"
-        height="25px"
-      />
-    </div>
-  );
-};
-
-export default App;
+```bash
+./public/sprites/ui/ui.svg
+./public/sprites/system/system.svg
+./public/sprites/flat/flat.svg
 ```
 
-This will print something like the following:
+<img alt="compiled sprite preview" src="./screenshots/compiled-sprites.jpg" width="100%"/>
+
+---
+
+## 🧱 Usage in React
+
+```tsx
+import SpriteIcon from 'react-svg-sprites';
+
+<SpriteIcon
+  className="text-primary"
+  file="/sprites/ui/ui.svg"
+  symbol="ArrowLeft"
+  width={24}
+  height={24}
+/>;
+```
+
+### Output
 
 ```html
-<svg class="text-primary" width="25px" height="25px">
-  <use href="/sprites/flat/flat-sprite.svg#timer"></use>
+<svg class="text-primary" width="24" height="24" aria-hidden="true">
+  <use href="/sprites/ui/ui.svg#ArrowLeft" />
 </svg>
 ```
 
-### Properties
+---
 
-- **className (string, required):** Class of the component.
-- **src (string, required):** Relative path to the SVG file to be used as icon.
-- **width (number, required):** Width of the icon.
-- **height (number, required):** Height of the icon.
-- **spritePath (string, optional):** Base path of the generated sprites. Default is /sprites.
+## 🧾 Props (SpriteIcon)
 
-## Contributions
+| Prop        | Type               | Required | Description                  |
+| ----------- | ------------------ | -------- | ---------------------------- |
+| `file`      | `string`           | ✅       | Path to the sprite file.     |
+| `symbol`    | `string`           | ✅       | Symbol ID inside the sprite. |
+| `width`     | `number \| string` | ✅       | Width of the icon.           |
+| `height`    | `number \| string` | ✅       | Height of the icon.          |
+| `className` | `string`           | ❌       | Optional class for styling.  |
 
-If you want to contribute to this project, feel free to send a pull request or open an issue in the repository.
+---
 
-### If you like my work, consider buying me a coffee!
+## 🧑‍💻 Contributing
 
-[Ko-fi](https://ko-fi.com/dpinto)
+Feel free to open issues, suggest features or send pull requests.
+
+---
+
+### ☕ Like this project?
+
+Support my work on [Ko-fi](https://ko-fi.com/dpinto) 💙

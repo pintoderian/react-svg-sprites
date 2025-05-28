@@ -55,6 +55,10 @@ export const generateSprites = async () => {
 
   // Process iconComponents (grouped or flat)
   for (const group of allGroups) {
+    if (!group.items || group.items.length === 0) {
+      continue;
+    }
+
     const spritePath = flatOutput
       ? path.join(outputDir, flatFileName)
       : path.join(outputDir, group.name, `${group.name}.svg`);

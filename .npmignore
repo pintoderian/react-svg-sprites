@@ -1,0 +1,8 @@
+src/
+*.ts
+*.tsx
+*.config.ts
+tsconfig.json
+tsup.config.ts
+sprites.config.ts
+node_modules/

@@ -15,7 +15,7 @@ export type SpriteIconSource = {
 
 export type SpriteConfig = {
   /**
-   * Folders containing raw .svg files to include in sprite.
+   * Folders with raw .svg icons.
    */
   iconDirs?: string[];
 

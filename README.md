@@ -25,6 +25,7 @@ npm install react-svg-sprites
 Create a `sprites.config.js` file in the root of your project:
 
 ```js
+const path = require('path');
 const { ArrowLeft, Folder, Timer } = require('lucide-react');
 
 module.exports = {
@@ -38,7 +39,7 @@ module.exports = {
     system: [{ name: 'Folder', component: Folder }],
   },
 
-  outputDir: './public/sprites',
+  outputDir: path.resolve(__dirname, 'public/sprites'),
   flatOutput: false,
   spriteFileName: 'icons',
   optimize: true,
@@ -74,14 +75,13 @@ This command will:
 ### Output example
 
 ```bash
-./public/sprites/ui/ui.svg
-./public/sprites/system/system.svg
-./public/sprites/flat/flat.svg
+pnpm generate:sprites
+
+> codegea.com@0.2.0 generate:sprites C:\laragon\www\codegea.com
+> npx react-svg-sprites
+
+✔ ✅ Sprite created: C:\laragon\www\codegea.com\public\sprites\bigdata.svg
 ```
-
-<img alt="compiled sprite preview" src="./screenshots/compiled-sprites.jpg" width="100%"/>
-
----
 
 ## 🧱 Usage in React
 
@@ -90,7 +90,7 @@ import SpriteIcon from 'react-svg-sprites';
 
 <SpriteIcon
   className="text-primary"
-  file="/sprites/ui/ui.svg"
+  file="/sprites/bigdata.svg"
   symbol="ArrowLeft"
   width={24}
   height={24}

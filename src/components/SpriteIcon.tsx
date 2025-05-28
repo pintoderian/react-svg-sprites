@@ -8,11 +8,6 @@ const SpriteIcon: React.FC<SpriteIconProps> = ({
   file,
   symbol,
 }) => {
-  if (!file || !symbol) {
-    console.error('[SpriteIcon] Both "file" and "symbol" props are required.');
-    return null;
-  }
-
   return (
     <svg
       className={className}

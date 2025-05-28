@@ -1,100 +1,197 @@
 import fs from 'fs';
 import path from 'path';
 import ora from 'ora';
-import SVGSpriter from 'svg-sprite';
 import { parse } from 'node-html-parser';
-import { SpriteConfig } from './types';
-import { getSvgFiles, loadSpriteConfig, cleanSvgAttributes } from './utils';
+import SVGSpriter from 'svg-sprite';
+import { optimize } from 'svgo';
+import { loadSpriteConfig, getSvgFiles, cleanSvgAttributes } from './utils';
+import type { SpriteConfig, SpriteIconSource } from './types';
 
+/**
+ * Generates SVG sprite sheets from folders and/or grouped components.
+ *
+ * @param iconDirs Raw .svg folders to include.
+ * @param iconComponents Component groups or flat list of icons.
+ * @param outputDir Where to write the generated sprite(s).
+ * @param flatOutput If true, outputs everything to a single file in root.
+ * @param spriteFileName Custom name for the output file (only used in flat mode).
+ * @param optimize Run svgo to minify and clean SVGs.
+ * @param includeTitle Add <title> to each symbol for accessibility.
+ */
 export const generateSprites = async () => {
-  const spinner = ora('Loading configuration...').start();
+  const spinner = ora('Loading config...').start();
 
   let config: SpriteConfig;
   try {
     config = await loadSpriteConfig();
-  } catch (error) {
-    spinner.fail((error as Error).message);
+  } catch (err) {
+    spinner.fail((err as Error).message);
     process.exit(1);
   }
 
-  const { iconDirs = [], iconComponents = [], outputDir } = config;
+  const {
+    iconDirs = [],
+    iconComponents = [],
+    outputDir,
+    flatOutput = false,
+    spriteFileName = 'sprite',
+    optimize: shouldOptimize = false,
+    includeTitle = false,
+  } = config;
 
-  if (!iconDirs.length && !iconComponents.length) {
-    spinner.fail('No icon sources provided in sprites.config.ts');
-    process.exit(1);
+  const flatFileName = `${spriteFileName}.svg`;
+
+  const allGroups: { name: string; items: SpriteIconSource[] }[] = [];
+
+  if (Array.isArray(iconComponents)) {
+    allGroups.push({ name: spriteFileName, items: iconComponents });
+  } else {
+    for (const [group, items] of Object.entries(iconComponents)) {
+      allGroups.push({ name: group, items });
+    }
   }
 
-  const spriter = new SVGSpriter({
-    mode: {
-      symbol: {
-        sprite: path.join(outputDir, 'sprite.svg'),
+  if (flatOutput && (allGroups.length > 1 || iconDirs.length > 1)) {
+    spinner.warn(
+      '[Warning] flatOutput is true but multiple sources detected — output may be overwritten!'
+    );
+  }
+
+  const addedSymbols = new Set<string>();
+
+  // Process component-based groups
+  for (const group of allGroups) {
+    const spritePath = flatOutput
+      ? path.join(outputDir, flatFileName)
+      : path.join(outputDir, group.name, `${group.name}.svg`);
+
+    const spriter = new SVGSpriter({
+      mode: {
+        symbol: {
+          sprite: spritePath,
+        },
       },
-    },
-  });
+    });
 
-  const addedNames = new Set<string>();
+    for (const { name, component } of group.items) {
+      spinner.text = `Rendering icon: ${name}`;
 
-  for (const dir of iconDirs) {
-    spinner.text = `Processing directory: ${dir}`;
-    const svgFiles = getSvgFiles(dir);
-
-    for (const filePath of svgFiles) {
       try {
-        const svgInput = fs.readFileSync(filePath, 'utf-8');
-        const parsed = parse(svgInput);
+        const ReactDOMServer = await import('react-dom/server');
+        const React = await import('react');
+
+        const svgHTML = ReactDOMServer.renderToStaticMarkup(
+          React.createElement(component)
+        );
+
+        const parsed = parse(svgHTML);
         const svg = parsed.querySelector('svg');
-        if (!svg) throw new Error('No <svg> tag');
+        if (!svg) throw new Error('Component must return an <svg> element.');
+
         cleanSvgAttributes(svg);
 
-        const name = path.basename(filePath, '.svg');
-        if (!addedNames.has(name)) {
-          spriter.add(name, null, svg.toString().trim());
-          addedNames.add(name);
+        if (includeTitle) {
+          svg.prepend(`<title>${name}</title>`);
+        }
+
+        let svgContent = svg.toString().trim();
+
+        if (shouldOptimize) {
+          const result = optimize(svgContent, { multipass: true });
+          svgContent = 'data' in result ? result.data : svgContent;
+        }
+
+        if (!addedSymbols.has(name)) {
+          spriter.add(name, null, svgContent);
+          addedSymbols.add(name);
         }
       } catch (err) {
-        spinner.fail(`Error parsing ${filePath}: ${(err as Error).message}`);
+        spinner.fail(`Render error for "${name}": ${(err as Error).message}`);
       }
     }
+
+    spriter.compile((err, result) => {
+      if (err) {
+        spinner.fail(`Error generating sprite for group: ${group.name}`);
+        console.error(err);
+        return;
+      }
+
+      for (const mode in result) {
+        for (const res in result[mode]) {
+          const outPath = result[mode][res].path;
+          fs.mkdirSync(path.dirname(outPath), { recursive: true });
+          fs.writeFileSync(outPath, result[mode][res].contents);
+          spinner.succeed(`✅ Sprite created: ${outPath}`);
+        }
+      }
+    });
   }
 
-  for (const { name, component } of iconComponents) {
-    spinner.text = `Rendering icon component: ${name}`;
-    try {
-      const ReactDOMServer = await import('react-dom/server');
-      const React = await import('react');
+  // Process folders of raw SVG files
+  for (const dir of iconDirs) {
+    const folder = path.basename(dir);
+    const files = getSvgFiles(dir);
 
-      const svgString = ReactDOMServer.renderToStaticMarkup(
-        React.createElement(component)
-      );
-      const parsed = parse(svgString);
-      const svg = parsed.querySelector('svg');
-      if (!svg) throw new Error('Component did not return <svg>');
-      cleanSvgAttributes(svg);
+    const spritePath = flatOutput
+      ? path.join(outputDir, flatFileName)
+      : path.join(outputDir, folder, `${folder}.svg`);
 
-      if (!addedNames.has(name)) {
-        spriter.add(name, null, svg.toString().trim());
-        addedNames.add(name);
+    const spriter = new SVGSpriter({
+      mode: {
+        symbol: {
+          sprite: spritePath,
+        },
+      },
+    });
+
+    for (const filePath of files) {
+      try {
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        const parsed = parse(raw);
+        const svg = parsed.querySelector('svg');
+        if (!svg) throw new Error('Invalid SVG');
+
+        cleanSvgAttributes(svg);
+
+        const fileName = path.basename(filePath, '.svg');
+
+        if (includeTitle) {
+          svg.prepend(`<title>${fileName}</title>`);
+        }
+
+        let svgContent = svg.toString().trim();
+
+        if (shouldOptimize) {
+          const result = optimize(svgContent, { multipass: true });
+          svgContent = 'data' in result ? result.data : svgContent;
+        }
+
+        if (!addedSymbols.has(fileName)) {
+          spriter.add(fileName, null, svgContent);
+          addedSymbols.add(fileName);
+        }
+      } catch (err) {
+        spinner.fail(`Parse error for file: ${filePath}`);
+        console.error(err);
       }
-    } catch (err) {
-      spinner.fail(`Error rendering ${name}: ${(err as Error).message}`);
     }
+
+    spriter.compile((err, result) => {
+      if (err) {
+        spinner.fail(`Error generating sprite for folder: ${folder}`);
+        console.error(err);
+        return;
+      }
+
+      for (const mode in result) {
+        for (const res in result[mode]) {
+          const outPath = result[mode][res].path;
+          fs.mkdirSync(path.dirname(outPath), { recursive: true });
+          fs.writeFileSync(outPath, result[mode][res].contents);
+          spinner.succeed(`✅ Sprite created: ${outPath}`);
+        }
+      }
+    });
   }
-
-  spinner.text = 'Compiling final sprite...';
-  spriter.compile((err: Error | null, result: any) => {
-    if (err) {
-      spinner.fail('Sprite generation failed.');
-      console.error(err);
-      return;
-    }
-
-    for (const mode in result) {
-      for (const resource in result[mode]) {
-        const outputPath = result[mode][resource].path;
-        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-        fs.writeFileSync(outputPath, result[mode][resource].contents);
-        spinner.succeed(`✅ Sprite created at ${outputPath}`);
-      }
-    }
-  });
 };

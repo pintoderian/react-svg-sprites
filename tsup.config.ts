@@ -11,5 +11,6 @@ export default defineConfig({
   splitting: false,
   clean: true,
   minify: false,
-  shims: false
+  shims: false,
+  outDir: 'dist',
 });

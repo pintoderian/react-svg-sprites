@@ -1,4 +1,10 @@
 #!/usr/bin/env node
-import { generateSprites } from './generate-sprites';
 
+require('esbuild-register/dist/node').register({
+  target: 'node16',
+  format: 'cjs',
+  loader: 'tsx',
+});
+
+import { generateSprites } from './generate-sprites';
 generateSprites();

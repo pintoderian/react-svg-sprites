@@ -4,7 +4,7 @@ export default defineConfig([
   {
     entry: ['src/cli.ts'],
     outDir: 'dist',
-    format: ['cjs'],
+    format: ['cjs', 'esm'],
     platform: 'node',
     target: 'node16',
     splitting: false,

@@ -39,7 +39,6 @@ export const generateSprites = async () => {
     includeTitle = false,
   } = config;
 
-  const flatFileName = `${spriteFileName}.svg`;
   const allGroups: { name: string; items: SpriteIconSource[] }[] = [];
 
   if (Array.isArray(iconComponents)) {
@@ -63,14 +62,19 @@ export const generateSprites = async () => {
       continue;
     }
 
-    const spritePath = !flatOutput
-      ? path.join(outputDir, flatFileName)
-      : path.join(outputDir, group.name, `${group.name}.svg`);
+    const spriteFile =
+      !flatOutput && allGroups.length === 1
+        ? `${spriteFileName}.svg`
+        : `${group.name}.svg`;
+
+    const spriteDir = flatOutput ? outputDir : path.join(outputDir, group.name);
 
     const spriter = new SVGSpriter({
+      dest: spriteDir,
       mode: {
         symbol: {
-          sprite: spritePath,
+          sprite: spriteFile,
+          dest: '.',
         },
       },
     });
@@ -137,13 +141,13 @@ export const generateSprites = async () => {
 
     const spriteDir = flatOutput ? outputDir : path.join(outputDir, folder);
     const spriteFile = `${folder}.svg`;
-    const spritePath = path.join(spriteDir, spriteFile);
 
     const spriter = new SVGSpriter({
       dest: spriteDir,
       mode: {
         symbol: {
           sprite: spriteFile,
+          dest: '.',
         },
       },
     });

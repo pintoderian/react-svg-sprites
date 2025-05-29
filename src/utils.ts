@@ -1,28 +1,31 @@
 import fs from 'fs';
 import path from 'path';
-import { pathToFileURL } from 'url';
-import { parse } from 'node-html-parser';
 import type { SpriteConfig } from './types';
 
 /**
- * Dynamically loads and parses sprites.config.ts from the root directory.
+ * Load sprites.config.ts or .js interchangeably.
  * Supports Windows, macOS, Linux.
  *
  * @returns SpriteConfig object with validated settings
  */
 export const loadSpriteConfig = async (): Promise<SpriteConfig> => {
-  const configPath = path.resolve(process.cwd(), 'sprites.config.js');
+  const tsPath = path.resolve(process.cwd(), 'sprites.config.ts');
+  const jsPath = path.resolve(process.cwd(), 'sprites.config.js');
 
-  if (!fs.existsSync(configPath)) {
-    throw new Error('❌ sprites.config.js not found in the project root.');
+  let config: SpriteConfig;
+
+  if (fs.existsSync(tsPath)) {
+    // .ts → esbuild-register ya lo maneja
+    config = (await import(tsPath)).default;
+  } else if (fs.existsSync(jsPath)) {
+    config = require(jsPath);
+  } else {
+    throw new Error('❌ sprites.config.ts or sprites.config.js not found.');
   }
-
-  const config = require(configPath) as SpriteConfig;
 
   if (!config.outputDir) {
-    throw new Error('❌ Missing required "outputDir" in sprites.config.js.');
+    throw new Error('❌ Missing required "outputDir" in config.');
   }
-
   return config;
 };
 

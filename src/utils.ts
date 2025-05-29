@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { SpriteConfig } from './types';
+import { pathToFileURL } from 'url';
 
 /**
  * Load sprites.config.ts or .js interchangeably.
@@ -9,24 +10,31 @@ import type { SpriteConfig } from './types';
  * @returns SpriteConfig object with validated settings
  */
 export const loadSpriteConfig = async (): Promise<SpriteConfig> => {
-  const tsPath = path.resolve(process.cwd(), 'sprites.config.ts');
-  const jsPath = path.resolve(process.cwd(), 'sprites.config.js');
-
-  let config: SpriteConfig;
+  const cwd = process.cwd();
+  const tsPath = path.resolve(cwd, 'sprites.config.ts');
+  const jsPath = path.resolve(cwd, 'sprites.config.js');
+  let filePath: string;
 
   if (fs.existsSync(tsPath)) {
-    // .ts → esbuild-register ya lo maneja
-    config = (await import(tsPath)).default;
+    filePath = tsPath;
   } else if (fs.existsSync(jsPath)) {
-    config = require(jsPath);
+    filePath = jsPath;
   } else {
-    throw new Error('❌ sprites.config.ts or sprites.config.js not found.');
+    throw new Error(
+      '❌ sprites.config.ts or sprites.config.js not found in project root.'
+    );
   }
 
+  const fileUrl = pathToFileURL(filePath).href;
+
+  const module = await import(fileUrl);
+  const config = module.default ?? (module as SpriteConfig);
+
   if (!config.outputDir) {
-    throw new Error('❌ Missing required "outputDir" in config.');
+    throw new Error('❌ Missing required "outputDir" in your config.');
   }
-  return config;
+
+  return config as SpriteConfig;
 };
 
 /**

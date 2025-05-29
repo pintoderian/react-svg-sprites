@@ -1,6 +1,6 @@
 {
   "name": "react-svg-sprites",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Extension to generate SVG sprites and provide an Icon component",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

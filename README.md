@@ -20,28 +20,32 @@ Supports raw folders, grouped components, flat or structured output, and even SV
 npm install react-svg-sprites
 ```
 
-## ⚙️ Configuration (`sprites.config.js`)
+## ⚙️ Configuration (`sprites.config.ts`)
 
-Create a `sprites.config.js` file in the root of your project:
+Create a `sprites.config.ts` file in the root of your project:
 
-```js
-const path = require('path');
-const { ArrowLeft, Folder, Timer } = require('lucide-react');
+```ts
+import path from 'path';
+import { Apple } from 'lucide-react';
 
-module.exports = {
-  iconDirs: ['./public/icons', './assets/svgs'],
-
+export default {
+  iconDirs: [
+    'src/assets/icons/bigdata',
+    'src/assets/icons/cms',
+    'src/assets/icons/database',
+    'src/assets/icons/digital-asset',
+    'src/assets/icons/flags',
+    'src/assets/icons/seo',
+    'src/assets/icons/system',
+    'src/assets/icons/teamwork',
+    'src/assets/icons/social',
+    'src/assets/icons/others',
+  ],
   iconComponents: {
-    ui: [
-      { name: 'ArrowLeft', component: ArrowLeft },
-      { name: 'Timer', component: Timer },
-    ],
-    system: [{ name: 'Folder', component: Folder }],
+    lucide: [{ name: 'Apple', component: Apple }],
   },
-
   outputDir: path.resolve(__dirname, 'public/sprites'),
-  flatOutput: false,
-  spriteFileName: 'icons',
+  flatOutput: true,
   optimize: true,
   includeTitle: true,
 };

@@ -31,7 +31,7 @@ export const generateSprites = async () => {
 
   const {
     iconDirs = [],
-    iconComponents = [],
+    iconComponents,
     outputDir,
     flatOutput = false,
     spriteFileName = 'sprite',
@@ -40,26 +40,30 @@ export const generateSprites = async () => {
   } = config;
 
   const flatFileName = `${spriteFileName}.svg`;
-
   const allGroups: { name: string; items: SpriteIconSource[] }[] = [];
 
   if (Array.isArray(iconComponents)) {
     allGroups.push({ name: spriteFileName, items: iconComponents });
-  } else {
+  } else if (
+    typeof iconComponents === 'object' &&
+    !Array.isArray(iconComponents) &&
+    iconComponents !== null
+  ) {
     for (const [group, items] of Object.entries(iconComponents)) {
-      allGroups.push({ name: group, items });
+      if (Array.isArray(items)) {
+        allGroups.push({ name: group, items });
+      }
     }
   }
 
   const addedSymbols = new Set<string>();
 
-  // Process iconComponents (grouped or flat)
   for (const group of allGroups) {
     if (!group.items || group.items.length === 0) {
       continue;
     }
 
-    const spritePath = flatOutput
+    const spritePath = !flatOutput
       ? path.join(outputDir, flatFileName)
       : path.join(outputDir, group.name, `${group.name}.svg`);
 
@@ -100,7 +104,7 @@ export const generateSprites = async () => {
         }
 
         if (!addedSymbols.has(name)) {
-          spriter.add(name, null, svgContent);
+          spriter.add(`${name}.svg`, null, svgContent);
           addedSymbols.add(name);
         }
       } catch (err) {
@@ -126,19 +130,20 @@ export const generateSprites = async () => {
     });
   }
 
-  // Process iconDirs (raw .svg folders)
+  // Procesar iconDirs (archivos .svg crudos)
   for (const dir of iconDirs) {
     const folder = path.basename(dir);
     const files = getSvgFiles(dir);
 
-    const spritePath = flatOutput
-      ? path.join(outputDir, `${folder}.svg`)
-      : path.join(outputDir, folder, `${folder}.svg`);
+    const spriteDir = flatOutput ? outputDir : path.join(outputDir, folder);
+    const spriteFile = `${folder}.svg`;
+    const spritePath = path.join(spriteDir, spriteFile);
 
     const spriter = new SVGSpriter({
+      dest: spriteDir,
       mode: {
         symbol: {
-          sprite: spritePath,
+          sprite: spriteFile,
         },
       },
     });
@@ -166,7 +171,7 @@ export const generateSprites = async () => {
         }
 
         if (!addedSymbols.has(fileName)) {
-          spriter.add(fileName, null, svgContent);
+          spriter.add(`${fileName}.svg`, null, svgContent);
           addedSymbols.add(fileName);
         }
       } catch (err) {

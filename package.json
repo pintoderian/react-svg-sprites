@@ -1,12 +1,12 @@
 {
   "name": "react-svg-sprites",
-  "version": "2.0.6",
+  "version": "2.1.1",
   "description": "Extension to generate SVG sprites and provide an Icon component",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "bin": {
-    "react-svg-sprites": "./dist/cli.js"
+    "react-svg-sprites": "dist/cli.js"
   },
   "files": [
     "dist"
@@ -38,7 +38,7 @@
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "esbuild-register": "^3.6.0",
+    "esbuild": "^0.25.5",
     "node-html-parser": "^7.0.1",
     "svg-sprite": "^2.0.4"
   },

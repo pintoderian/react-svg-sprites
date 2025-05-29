@@ -1,6 +1,5 @@
-#!/usr/bin/env node
-
-require('esbuild-register/dist/node').register({
+import { register } from 'esbuild-register/dist/node';
+register({
   target: 'node16',
   format: 'cjs',
   loader: 'tsx',

@@ -17,6 +17,7 @@ import type { SpriteConfig, SpriteIconSource } from './types';
  * @param spriteFileName Name to use for iconComponents output (only in flat mode).
  * @param optimize Run SVGO to minify and clean SVGs.
  * @param includeTitle Add <title> to each symbol for accessibility.
+ * @param exportMapping If true, exports a JSON mapping of icon names to their file paths.
  */
 export const generateSprites = async () => {
   const spinner = ora('Loading config...').start();
@@ -37,8 +38,10 @@ export const generateSprites = async () => {
     spriteFileName = 'sprite',
     optimize: shouldOptimize = false,
     includeTitle = false,
+    exportMapping = false,
   } = config;
 
+  const spriteMapping: Record<string, string[]> = {};
   const allGroups: { name: string; items: SpriteIconSource[] }[] = [];
 
   if (Array.isArray(iconComponents)) {
@@ -79,6 +82,8 @@ export const generateSprites = async () => {
       },
     });
 
+    spriteMapping[group.name] = [];
+
     for (const { name, component } of group.items) {
       spinner.text = `Rendering component icon: ${name}`;
 
@@ -110,6 +115,7 @@ export const generateSprites = async () => {
         if (!addedSymbols.has(name)) {
           spriter.add(`${name}.svg`, null, svgContent);
           addedSymbols.add(name);
+          spriteMapping[group.name].push(name);
         }
       } catch (err) {
         spinner.fail(`Render error: ${name} → ${(err as Error).message}`);
@@ -152,6 +158,8 @@ export const generateSprites = async () => {
       },
     });
 
+    spriteMapping[folder] = [];
+
     for (const filePath of files) {
       try {
         const raw = fs.readFileSync(filePath, 'utf-8');
@@ -177,6 +185,7 @@ export const generateSprites = async () => {
         if (!addedSymbols.has(fileName)) {
           spriter.add(`${fileName}.svg`, null, svgContent);
           addedSymbols.add(fileName);
+          spriteMapping[folder].push(fileName);
         }
       } catch (err) {
         spinner.fail(`Parse error: ${filePath}`);
@@ -201,4 +210,13 @@ export const generateSprites = async () => {
       }
     });
   }
+
+  if (exportMapping) {
+    const mappingJson = JSON.stringify(spriteMapping, null, 2);
+    const mappingFile = path.join(outputDir, 'sprite-mapping.json');
+    fs.writeFileSync(mappingFile, mappingJson);
+    spinner.succeed(`📦 Mapping JSON created: ${mappingFile}`);
+  }
+
+  return spriteMapping;
 };

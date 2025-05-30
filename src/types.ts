@@ -49,4 +49,9 @@ export type SpriteConfig = {
    * Include <title> tags inside each <symbol> for accessibility.
    */
   includeTitle?: boolean;
+
+  /**
+   * Export the mapping of icon names to their file paths.
+   */
+  exportMapping?: boolean;
 };
